@@ -2,19 +2,32 @@ import Modal from "../Modal/Modal";
 import PostList from "../PostList/PostList";
 import SearchBox from "../SearchBox/SearchBox";
 import Pagination from "../Pagination/Pagination";
+import { useQuery } from '@tanstack/react-query';
+import { fetchPosts } from '../../services/postService';
+import { useState } from "react";
 
 import css from "./App.module.css";
 
-export default function App() {
+export default function App()
+{
+  const [searchText, setSearchText] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const { data } = useQuery({
+    queryKey: ['post', searchText, currentPage],
+    queryFn: () => fetchPosts(searchText, currentPage),
+  });
+
   return (
     <div className={css.app}>
       <header className={css.toolbar}>
         <SearchBox />
-        <Pagination />
+        {/* <Pagination /> */}
         <button className={css.button}>Create post</button>
       </header>
-      <Modal>{/* Передати через children компонент CreatePostForm або EditPostForm */}</Modal>
-      <PostList />
+      {/* <Modal></Modal> */}
+      {data && <PostList posts={data?.posts} />}
+
     </div>
   );
 }
