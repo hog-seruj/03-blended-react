@@ -6,6 +6,8 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { fetchPosts } from "../../services/postService";
 import { useState } from "react";
 import { useDebounce } from "use-debounce";
+import EditPostForm from "../EditPostForm/EditPostForm";
+import type { Post } from "../../types/post";
 
 import css from "./App.module.css";
 
@@ -14,8 +16,12 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState(1);
   const [debounceValue] = useDebounce(searchText, 1000);
 
+  const [modalOpen, setModalOpen] = useState(false);
+  const [formType, setFormType] = useState('');
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+
   const { data } = useQuery({
-    queryKey: ["post", debounceValue, currentPage],
+    queryKey: ["posts", debounceValue, currentPage],
     queryFn: () => fetchPosts(debounceValue, currentPage),
     placeholderData: keepPreviousData,
   });
@@ -33,8 +39,20 @@ export default function App() {
         )}
         <button className={css.button}>Create post</button>
       </header>
-      {/* <Modal></Modal> */}
-      {data && <PostList posts={data?.posts} />}
+      {modalOpen && (
+        <Modal>
+          {formType === 'editForm' && selectedPost && <EditPostForm
+            initialValues={selectedPost}
+            setModalOpen={setModalOpen}
+          />}
+        </Modal>
+      )}
+      {data && <PostList
+        posts={data?.posts}
+        displayModal={setModalOpen}
+        formType={setFormType}
+        onSelectPost={setSelectedPost}
+      />}
     </div>
   );
 }
